@@ -1,0 +1,100 @@
+<{include file="header.html"}>
+
+<style>
+.cateList a { margin-right: 5px; }
+.cateList a.cur { color: #ff6600; }
+</style>
+
+<div id="app" class="container">
+	<div class="cateList">
+		<a @click="listProduct(0)" :class="cateId == 0 ? 'cur': ''">全部</a>
+		<a v-for="cate in categories" @click="listProduct(cate.id)" :class="cateId == cate.id ? 'cur' : ''">{{ cate.category }}</a>
+	</div>
+
+	<ul class="product-list">
+		<li v-for="p in products" class="product-item">
+			<div>
+				<a @click="buy(p)"><img :src="'/happyfactory/images/product/' + p.pic"></a>
+			</div>
+			<div class="title">
+				<a @click="buy(p)">{{ p.productname }}</a>
+				<em class="price">&yen;{{ p.price }}</em>
+			</div>
+		</li>
+		<div style="clear: both;"></div>
+	</ul>
+
+	<div v-if="showBuyDialog" id="buyDialog" class="dialog">
+		<div class="dialog-header">购买<strong>{{ buyProduct.productname }}</strong></div>
+		<div class="dialog-body">
+			<input type="number" v-model="buyAmount">
+		</div>
+		<p class="dialog-footer">
+			<button @click="confirmBuy">购买</button>
+			<a @click="showBuyDialog=false">取消</a>
+		</p>
+	</div>
+</div>
+
+<script type="text/javascript">
+var app = new Vue({
+	el: "#app",
+	data: {
+		cateId: null,
+		categories: [],
+		products: [],
+		buyAmount: 0,
+		buyProduct: null,
+		showBuyDialog: false,
+	},
+	mounted: function() {
+		this.initData();
+		this.listProduct(0);
+	},
+	methods: {
+		initData(){
+			$.getJSON('store.php?action=category', (res) => {
+				if(res.errcode == 0){
+					this.$data.categories = res.categories;
+				}
+			});
+		},
+		listProduct(cateId){
+			if(cateId == this.$data.cateId){
+				return;
+			}
+			this.$data.cateId = cateId;
+			$.getJSON('store.php?ajax=1&cateid='+cateId, (res) => {
+				if(res.errcode==0){
+					this.$data.products = res.products;
+				}
+			});
+		},
+		buy(product){
+			this.$data.buyProduct = product;
+			this.$data.buyAmount = 0;
+			this.$data.showBuyDialog = true;
+		},
+		confirmBuy(){
+			var data = {
+				pid: this.$data.buyProduct.pid,
+				amount: this.$data.buyAmount
+			};
+			$.ajax({
+				url: 'store.php?action=buy',
+				type: 'post',
+				dataType: 'json',
+				data: data,
+				success: (res) => {
+					if(res.errcode != 0){
+						alert(res.errmsg);
+						return;
+					}
+					this.$data.showBuyDialog = false;
+					mainApp.getUser();
+				}
+			});
+		}
+	}
+});
+</script>

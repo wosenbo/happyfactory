@@ -1,0 +1,21 @@
+<{include file="admin_header.html"}>
+
+<form method="post" action="admin.php?m=changelog&a=editsave&id=<{$id}>">
+<table width="80%" cellspacing="0" cellpadding="3" border="0">
+<tr>
+  <td>日志ID：</td>
+  <td><{$id}></td>
+</tr>
+<tr>
+  <td>标题：</td>
+  <td><input type="text" name="title" value="<{$title}>"></td>
+</tr>
+<tr>
+  <td>内容：</td>
+  <td><textarea name="content" cols="50" rows="6"><{$content}></textarea></td>
+</tr>
+<tr>
+  <td colspan="2"><input type="submit" value="保存" /></td>
+</tr>
+</table>
+</form>

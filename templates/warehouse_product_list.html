@@ -1,0 +1,13 @@
+<ul>
+<{section name=loop loop=$warehouse_list}>
+  <li class="product_item">
+    <div><a href="javascript:;" onclick="product_sell(<{$warehouse_list[loop].pid}>)"><img src="<{$app_url}>/images/product/<{$warehouse_list[loop].pic}>"></a></div>
+    <div class="title">
+        <a href="javascript:;" onclick="product_sell(<{$warehouse_list[loop].pid}>)"><{$warehouse_list[loop].productname}></a>
+        (<span id="lblCount_<{$warehouse_list[loop].pid}>" class="product_count"><{$warehouse_list[loop].count}></span>)
+    </div>
+  </li>
+<{sectionelse}>
+  <li>仓库中没有任何物品！</li>
+<{/section}>
+</ul>

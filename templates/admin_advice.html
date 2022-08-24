@@ -1,0 +1,29 @@
+<{include file="admin_header.html"}>
+
+<table width="90%" cellspacing="0" cellpadding="0" border="0">
+<tr>
+  <th>ID</th>
+  <th>玩家帐号</th>
+  <th>内容</th>
+  <th>日期</th>
+  <th>状态</th>
+  <th>操作</th>
+</tr>
+<{section name=lp loop=$adviceList}>
+<tr>
+  <td><{$adviceList[lp].id}></td>
+  <td><{$adviceList[lp].username}></td>
+  <td><{$adviceList[lp].content}></td>
+  <td><{$adviceList[lp].dateline|date_format:"%Y-%m-%d"}></td>
+  <td><{if $adviceList[lp].status == "0"}><font color="red">未回复</font><{else}><font color="#00CC33">已回复</font><{/if}></td>
+  <td>
+    <a href="admin.php?m=advice&a=replyform&id=<{$adviceList[lp].id}>">回复</a> | 
+    <a href="admin.php?m=advice&a=remove&id=<{$adviceList[lp].id}>">删除</a>
+  </td>
+</tr>
+<{sectionelse}>
+<tr>
+  <td colspan="6">还没有建议返馈信息……</td>
+</tr>
+<{/section}>
+</table>

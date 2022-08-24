@@ -1,0 +1,35 @@
+<{include file="header.html"}>
+<{include file="market_header.html"}>
+
+<table width="800" cellspacing="0" cellpadding="0" border="0">
+<tr>
+  <td width="200" bgcolor="#F7F7F7" valign="top">
+  <{include file="market_left.html"}>
+  </td>
+  
+  <td valign="top">
+        <table width="95%" cellspacing="0" cellpadding="3" align="center" border="0">
+        <tr>
+          <th height="30"><strong>物品名称</strong></th>
+          <th><strong>数量</strong></th>
+          <th><strong>购买单价</strong></th>
+          <th><strong>卖家</strong></th>
+          <th><strong>交易日期</strong></th>
+        </tr>
+        <{section name=loop loop=$log_list}>
+        <tr>
+          <td><{$log_list[loop].productname}></td>
+          <td><{$log_list[loop].count}></td>
+          <td><{$log_list[loop].price}></td>
+          <td><{$log_list[loop].seller}></td>
+          <td><{$log_list[loop].date|date_format:"%Y-%m-%d"}></td>
+        </tr>
+        <{sectionelse}>
+        <tr>
+          <td colspan="4">没有交易记录！</td>
+        </tr>
+        <{/section}>
+        </table>
+  </td>
+</tr>
+</table>

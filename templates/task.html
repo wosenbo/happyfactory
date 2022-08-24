@@ -1,0 +1,60 @@
+<{include file="header.html"}>
+
+<{if $message != ''}>
+<div style="padding:20px;background:#FFC;">
+<{$message}>
+<p style="line-height:30px"><a href="task.php">返回任务列表</a></p>
+</div>
+<{else}>
+
+<div id="app" class="container">
+<table width="800">
+<tr>
+  <td width="200" valign="top" bgcolor="#FFFFCC" height="200">
+  
+    <table>
+    <tr>
+      <td><strong>任务动态...</strong></td>
+    </tr>
+    </table>
+    
+    <marquee direction="up" scrolldelay="150">
+    <table>
+    <{section name=tl loop=$taskLogList}>
+    <tr>
+      <td>&gt;&gt;&gt; 玩家 <strong><{$taskLogList[tl].username}></strong> 完成任务 <a href="task.php"><strong><{$taskLogList[tl].name}></strong></a> ，获得 <{$taskLogList[tl].reward}> 金钱！</td>
+    </tr>
+    <{/section}>
+    </table>
+    </marquee>
+  
+  </td>
+  <td valign="top">
+
+        <table width="100%" cellspacing="0" cellpadding="5" border="0" align="center">
+        <tr>
+          <th>任务名称</th>
+          <th>任务简介</th>
+          <th>奖励</th>
+          <th>操作</th>
+        </tr>
+        <{section name=tloop loop=$taskList}>
+        <tr bgcolor="<{cycle values="#F7F7F7,#FFFFFF"}>">
+          <td height="40" width="20%"><{$taskList[tloop].name}></td>
+          <td width="35%"><{$taskList[tloop].description}></td>
+          <td width="15%">金钱：<{$taskList[tloop].rewardmin}>~<{$taskList[tloop].rewardmax}></td>
+          <td width="20%"><a href="task.php?action=accept&taskid=<{$taskList[tloop].taskid}>">接受任务</a></td>
+        </tr>
+        <{sectionelse}>
+        <tr>
+          <td colspan="3">暂时没有任务可做！</td>
+        </tr>
+        <{/section}>
+        </table>
+
+  </td>
+</tr>
+</table>
+</div>
+
+<{/if}>

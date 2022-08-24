@@ -1,0 +1,17 @@
+<{include file="header.html"}>
+
+<table width="800" cellspacing="0" cellpadding="3" border="0" bgcolor="#FFFFCC">
+<tr><td>每成功邀请一个好友您将获得 
+<strong><font color="red"><{$inviteAward|default:"0"}></font></strong> 金币。</td>
+<td rowspan="3" width="200" align="center"><my:copylink invitation="true"></td></tr>
+<tr><td>您已成功邀请了 <strong><{$inviteCount|default:"0"}></strong> 个好友加入本游戏，感谢您对我们的支持！</td></tr>
+<tr><td height="2" bgcolor="#EAEAEA"></td></tr>
+</table>
+
+<table width="800" cellspacing="0" cellpadding="3" border="0">
+<tr>
+  <td>
+  <my:request-form method="POST" type='开心梦工厂' invite="true" content="快去我的工厂看看我在造什么新东西！<my:req-choice url='invite.php?action=come&inviter=<{$uid}>' label='我愿意'>" id="myformb" invite="true" action="invite.php?action=send"> <my:multi-friend-selector actiontext="邀请好友加入 开心梦工厂 游戏" showborder="false" rows="4" max="20" exclude_friends_added="true"> </my:request-form>
+  </td>
+</tr>
+</table>

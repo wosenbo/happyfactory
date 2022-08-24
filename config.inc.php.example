@@ -1,0 +1,9 @@
+<?php
+$api_key = '';
+$secret = '';
+
+$dbhost = 'localhost';
+$dbuser = 'root';
+$dbpwd = '';
+$dbname = 'happyfactory';
+$tablepre = 'game_';

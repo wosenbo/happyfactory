@@ -1,0 +1,117 @@
+<{include file="header.html"}>
+
+<script type="text/javascript">
+function friends_sync()
+{
+	var divFriendList = $('divFriendList');
+	divFriendList.setTextValue('loading...');
+	var ajax = new Ajax();
+	ajax.responseType = Ajax.MYML;
+	ajax.ondone = function(data)
+	{
+		divFriendList.setInnerMYML(data);
+	}
+	ajax.onerror = function(data)
+	{
+		divFriendList.setInnerMYML('载入失败！');
+	}
+	var params = {'a':'refresh'};
+	ajax.post('friend.php', params);
+}
+</script>
+
+<div style="padding:5px;background:#FFC;border:#F90">
+  <a href="javascript:;" onclick="friends_sync()"><img src="<{$app_url}>/images/sync.gif" border="0" style="vertical-align:middle;"></a>
+  好友数据已被缓存，要想更新好友信息请点击“同步”按钮！
+</div>
+
+<table width="800" cellspacing="0" cellpadding="0" border="0">
+<tr>
+  <td width="600" style="border-right:#EAEAEA 1px solid" valign="top">
+  
+    <table width="100%">
+    <tr>
+      <td width="40%" valign="top">
+      
+        <table width="205" cellspacing="0" cellpadding="0" align="center">
+        <tr>
+          <td style="border:#EAEAEA 1px solid" height="205"><my:profile-pic uid="<{$userInfo.uid}>" size="normal" /></td>
+        </tr>
+        <tr>
+          <td align="center"><{$userInfo.username}></td>
+        </tr>
+        <tr>
+          <td>
+          金钱：<{$userInfo.money}><br />
+          等级：<{$userInfo.level}><br />
+          经验：<{$userInfo.empiricnow}>/<{$userInfo.uEmpiric}><br />
+          </td>
+        </tr>
+        </table>
+      
+      </td>
+      <td valign="top">
+      
+        <table width="100%" align="center">
+        <tr>
+          <td><strong>TA 正在制造什么...</strong></td>
+        </tr>
+        <tr>
+          <td height="100" align="center" valign="middle">
+          
+            <{if !$makeList}>
+            当前没有任何正在制造的物品...
+            <{else}>
+              <{section name=makeLp loop=$makeList}>
+              <li class="product_item">
+                <img src="<{$app_url}>/images/product/<{$makeList[makeLp].pic}>" border="0" /><br />
+                <span><{$makeList[makeLp].productname}></span>
+              </li>
+              <{/section}>
+            <{/if}>
+          
+          </td>
+        </tr>
+        <tr>
+          <td><strong>给TA留言：</strong></td>
+        </tr>
+        <tr>
+          <td>
+            <textarea cols="40" rows="5"></textarea><br />
+            <input type="button" value="发送留言" />
+          </td>
+        </tr>
+        </table>
+      
+      </td>
+    </tr>
+    </table>
+  
+  </td>
+  <td width="200" valign="top">
+
+	<table>
+    <tr>
+      <td><strong>好友列表</strong></td>
+    </tr>
+    <tr>
+      <td>
+        <div style="padding:5px;" id="divFriendList">
+        <{section name=loop loop=$friend_list}>
+          <li><a href="friend.php?userId=<{$friend_list[loop].userid}>"><{$friend_list[loop].username}></a></li>
+        <{sectionelse}>
+          <li>您还没有添加好友！</li>
+        <{/section}>
+        </div>
+      </td>
+    </tr>
+    <{if $updated == "1"}>
+    <tr>
+      <td>更新完成!</td>
+    </tr>
+    <{/if}>
+    </table>
+
+  </td>
+</tr>
+</table>

@@ -1,0 +1,22 @@
+<{include file="admin_header.html"}>
+
+<form method="post" action="admin.php?m=advice&a=reply">
+<input type="hidden" name="id" value="<{$id}>">
+<table>
+<tr>
+  <td align="right">玩家：</td>
+  <td><{$username}></td>
+</tr>
+<tr>
+  <td align="right">建议内容：</td>
+  <td><strong><font color="red"><{$content}></font></strong></td>
+</tr>
+<tr>
+  <td align="right" valign="top">回复：</td>
+  <td><textarea cols="50" rows="10" name="replycontent"><{$reply}></textarea></td>
+</tr>
+<tr>
+  <td colspan="2" height="50"><input type="submit" value="回复" /></td>
+</tr>
+</table>
+</form>

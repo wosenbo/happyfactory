@@ -1,0 +1,41 @@
+<style type="text/css">
+.grid{ border-collapse:collapse; }
+.grid td{ border:#AFAFAF 1px solid; }
+</style>
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr>
+  <td width="60%" valign="top">
+  
+    <table width="80%" align="center" class="grid">
+    <tr>
+      <th align="center" height="30">效率</th>
+      <th align="center" height="30">成本</th>
+    </tr>
+    <{section name=lp loop=$studyLevels}>
+    <tr>
+      <td align="center" <{if $studyLevels[lp].level == $elevel}>bgcolor="#FF6600"<{/if}>><{$studyLevels[lp].efficiency}>% (Lv.<{$studyLevels[lp].level}>)</td>
+      <td align="center" <{if $studyLevels[lp].level == $clevel}>bgcolor="#FF6600"<{/if}>><{$studyLevels[lp].cost}>% (Lv.<{$studyLevels[lp].level}>)</td>
+    </tr>
+    <{/section}>
+    <tr>
+      <td align="center" height="50"><input type="button" value="升级" onclick="upgradeStudy(1)" /></td>
+      <td align="center" height="50"><input type="button" value="升级" onclick="upgradeStudy(2)" /></td>
+    </tr>
+    </table>
+  
+  </td>
+  <td width="40%" valign="top">
+  
+    <table align="left">
+    <tr>
+      <td>
+      <strong><font color="red">研发中心可以有效的为您提高生产较率并且会降低生产所需的成本！</font></strong>
+      您已拥有了属于您自已的研发中心，在<a href="make.php"><strong>生产中心</strong></a>里面会有{PIC}标志，表示您可以享受到研发中心给您带来的效率的提升和成本的下降！
+      </td>
+    </tr>
+    </table>
+  
+  </td>
+</tr>
+</table>

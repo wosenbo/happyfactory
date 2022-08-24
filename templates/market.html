@@ -1,0 +1,144 @@
+<{include file="header.html"}>
+
+<style>
+.mkt-left { width: 200px; float: left; }
+.mkt-main { margin-left: 210px; }
+.tips { color: #f00; border: 1px solid #fc9; padding: 5px; margin-bottom: 10px; }
+</style>
+
+<div id="app" class="container">
+  <ul class="g-tab">
+    <li v-for="menu in menus"><a :href="menu.url">{{ menu.name }}</a></li>
+  </ul>
+  <div class="mkt-con">
+    <div class="mkt-left"><img src="images/market_bg.jpg"></div>
+    <div class="mkt-main">
+      <div class="tips">购买好友的物品免税，购买普通用户的物品收取 5% 税费。</div>
+      <ul class="g-tab">
+        <li v-for="cate in categories"><a @click="changeCategory(cate.id)">{{ cate.category }}</a></li>
+      </ul>
+      <table>
+        <tr>
+          <th>物品名称</th>
+          <th width="15%">售价</th>
+          <th width="15%">数量</th>
+          <th width="15%">卖家</th>
+          <th width="20%">操作</th>
+        </tr>
+        <tr v-for="p in products">
+          <td>{{ p.productname }}</td>
+          <td>{{ p.price }}</td>
+          <td>{{ p.count }}</td>
+          <td>
+            {{ p.username }}
+            <img v-if="p.is_friend" src="images/friend_ico.gif">
+          </td>
+          <td>
+            <a @click="buy(p)">购买</a>
+          </td>
+        </tr>
+      </table>
+      <div v-if="showBuyDialog" id="buyDialog" class="dialog">
+        <div class="dialog-header">购买<strong>{{ buyProduct.productname }}</strong></div>
+        <div class="dialog-body">
+          <input type="number" v-model="buyAmount">
+        </div>
+        <p class="dialog-footer">
+          <button @click="confirmBuy">购买</button>
+          <a @click="showBuyDialog=false">取消</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var app = new Vue({
+  el: "#app",
+  data: {
+    cateId: 0,
+    categories: [
+      {id: 0, category: '全部'}
+    ],
+    products: [],
+    menus: [
+      {name: '市场首页', url: 'market.php'},
+      {name: '出售物品', url: 'market.php?module=sell'},
+      {name: '物品下架', url: 'market.php?module=move'},
+      {name: '购买记录', url: 'market.php?module=buylog'},
+      {name: '出售记录', url: 'market.php?module=selllog'}
+    ],
+    showBuyDialog: false,
+    buyProduct: null,
+    buyAmount: 0
+  },
+  mounted: function() {
+    this.initData();
+    this.listProduct();
+  },
+  methods: {
+    initData(){
+      $.getJSON('store.php?action=category', (res) => {
+        if(res.errcode == 0){
+          $.each(res.categories, (index, cate) => {
+            this.$data.categories.push(cate);
+          });
+        }
+      });
+    },
+    changeCategory(cateId){
+      this.$data.cateId = cateId;
+      this.listProduct();
+    },
+    listProduct(){
+      var data = {
+        'cateid': this.$data.cateId,
+        'ajax': 1
+      };
+      $.getJSON('market.php', data, (res) => {
+        if(res.errcode == 0){
+          this.$data.products = res.products;
+        }
+      });
+    },
+    buy(product){
+      this.$data.buyProduct = product;
+      this.$data.buyAmount = 0;
+      this.$data.showBuyDialog = true;
+    },
+    confirmBuy(){
+      var product = this.$data.buyProduct;
+      var totalAmount = parseInt(product.count);
+      var buyAmount = parseInt(this.$data.buyAmount);
+      if(isNaN(buyAmount) || isNaN(totalAmount) || buyAmount < 1){
+        alert('请输入正确的购买数量');
+        return;
+      }
+      if(buyAmount>totalAmount){
+        alert('购买数量不能超过商品数量');
+        return;
+      }
+      let data = {
+        action: 'buy',
+        mid: product.id,
+        count: buyAmount
+      };
+      $.ajax({
+        url: 'market_do.php',
+        type: 'post',
+        dataType: 'json',
+        data: data,
+        success: (res) => {
+          if(res.errcode==0){
+            this.$data.showBuyDialog = false;
+            this.$data.buyAmount = 0;
+            this.$data.buyProduct = null;
+            this.listProduct();
+            mainApp.getUser();
+          }
+        }
+      });
+    }
+  }
+});
+</script>

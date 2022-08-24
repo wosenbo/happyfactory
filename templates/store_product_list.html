@@ -1,0 +1,10 @@
+<ul>
+<{section name=loop loop=$store_list}>
+  <li class="product_item">
+    <div><a href="javascript:;" onclick="product_buy(<{$store_list[loop].pid}>)"><img src="<{$app_url}>/images/product/<{$store_list[loop].pic}>"></a></div>
+    <div class="title"><a href="javascript:;" onclick="product_buy(<{$store_list[loop].pid}>)"><{$store_list[loop].productname}></a>(单价：<{$store_list[loop].price}>)</div>
+  </li>
+<{sectionelse}>
+  <li>商店中没有任何物品！</li>
+<{/section}>
+</ul>

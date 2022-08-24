@@ -1,0 +1,198 @@
+<{include file="header.html"}>
+
+<style type="text/css">
+.mod { margin-bottom: 10px; position: relative; border: 1px solid #ddd; }
+.mod .main { padding: 10px; }
+.mod h3 { background-color: #eaeaea; }
+.mod-dev .lv { border: 1px solid #ccc; width: 35%; float: left; margin-right: 10px; box-shadow: 3px 3px 5px #eaeaea; border-radius: 5px; }
+.mod-dev .lv li { border-bottom: 1px solid #ccc; text-align: center; padding: 5px 0; }
+.mod-dev .lv .cur { background-color: #ff6600; color: #fff; }
+.mod-dev .tips { font-size: 14px; color: #333; }
+.mod-dev .tips em { color: #f00; }
+.mod-dev .lv .title { background-color: #eaeaea; }
+.mod .dialog { position: absolute; padding: 10px; border-radius: 8px; box-shadow: 3px 3px 8px #999; top: 0; left: 200px; top: 100px; }
+</style>
+
+<div id="app" class="container">
+	<factory-list ref="fact" @buy="onBuy"></factory-list>
+	<dev-center ref="dev"></dev-center>
+</div>
+
+<script>
+Vue.component('factory-list', {
+	data () {
+		return {
+			factory: null,
+			factories: []
+		}
+	},
+	mounted: function () {
+		this.listFactory();
+	},
+	methods: {
+		listFactory () {
+			$.getJSON('index.php', {action: 'factory'}, (res) => {
+				if (res.errcode == 0) {
+					this.$data.factories = res.factories;
+				}
+			})
+		},
+		buy (factory) {
+			this.$data.factory = factory;
+			$.ajax({
+				url: 'factory.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {action: 'buy', factid: factory.factid},
+				success: (res) => {
+					if (res.errcode != 0) {
+						alert(res.errmsg);
+						return;
+					}
+
+					this.$emit('buy');
+
+					$.each(this.$data.factories, (index, fact) => {
+						if (fact.factid == factory.factid) {
+							fact.status = 1;
+						}
+					});
+				}
+			});
+		}
+	},
+	template: `
+		<div class="mod mod-factory">
+			<h3>生产线</h3>
+			<div class="main">
+	      <ul class="clearfix">
+	        <li v-for="factory in factories" class="product-item">
+	        	<template v-if="factory.status == 1">
+		        	<p><a href="make.php"><img :src="'images/factory/' + factory.pic_act"></a></p>
+		        	<p class="title"><a href="make.php">进入生产&gt;&gt;&gt;</a></p>
+		        </template>
+	        	<template v-else>
+		        	<p><img :src="'images/factory/' + factory.pic"></p>
+		        	<p class="title"><a @click="buy(factory)">购买</a></p>
+		        </template>
+	        </li>
+	      </ul>
+	    </div>
+		</div>
+	`
+});
+
+
+Vue.component('dev-center', {
+	data () {
+		return {
+			type: null,
+			user_study: null,
+			level_info: null,
+			studies: [],
+			showUpgradeDialog: false
+		}
+	},
+	mounted: function () {
+		this.listStudy();
+
+		this.$nextTick(() => {
+			this.$on('update', () => {
+				this.listStudy();
+			});
+		});
+	},
+	methods: {
+		listStudy () {
+			$.getJSON('index.php?action=study', (res) => {
+				if (res.errcode == 0) {
+					this.$data.studies = res.studies;
+					this.$data.user_study = res.user_study;
+				}
+			});
+		},
+		queryUpgrade (type) {
+	    $.ajax({
+	        url: 'study.php',
+	        dataType: 'json',
+	        data: {action: 'upgrade', type: type},
+	        type: 'POST',
+	        success: (res) => {
+	            if (res.errcode != 0) {
+	            	alert(res.errmsg);
+	            	return;
+	            }
+	            this.$data.level_info = res.level_info;
+	            this.$data.type = type;
+	            this.showUpgradeDialog = true;
+	        }
+	    });
+		},
+		upgrade () {
+			this.$data.showUpgradeDialog = false;
+			let type = this.$data.type;
+	    $.ajax({
+	        url: 'study.php',
+	        dataType: 'json',
+	        data: {action: 'upgrade', confirm: 1, type: type},
+	        type: 'POST',
+	        success: (res) => {
+	            if (res.errcode != 0) {
+	            	alert(res.errmsg);
+	            	return;
+	            }
+	            this.listStudy();
+	        }
+	    });
+		}
+	},
+	template: `
+		<div class="mod mod-dev">
+			<h3>研发中心</h3>
+			<div class="main clearfix">
+				<ul class="lv">
+					<li class="title">效率</li>
+					<li v-for="study in studies" :class="user_study && study.level == user_study.elevel ? 'cur' : ''">{{ study.efficiency }}% (Lv.{{ study.level }})</li>
+					<li><button type="button" @click="queryUpgrade(1)" :disabled="!user_study">升级</button></li>
+				</ul>
+				<ul class="lv">
+					<li class="title">成本</li>
+					<li v-for="study in studies" :class="user_study && study.level == user_study.clevel ? 'cur' : ''">{{ study.cost }}% (Lv.{{ study.level }})</li>
+					<li><button type="button" @click="queryUpgrade(2)" :disabled="!user_study">升级</button></li>
+				</ul>
+				<div class="tips">
+					<em>研发中心可以有效的为您提高生产较率并且会降低生产所需的成本！</em>
+					您已拥有了属于您自已的研发中心，在 <a href="make.php">生产中心</a> 里面会有等级标志，表示您可以享受到研发中心给您带来的效率的提升和成本的下降。
+				</div>
+			</div>
+			<div v-if="showUpgradeDialog" class="dialog">
+				<div class="dialog-body">升级到 {{ level_info.level }} 级研发中心需要 {{ level_info.price }} 金币，是否需要升级？</div>
+				<div class="dialog-footer">
+					<button type="button" @click="upgrade">升级</button>
+					<a @click="showUpgradeDialog = false">取消</a>
+				</div>
+			</div>
+		</div>
+	`
+});
+
+var app = new Vue({
+	el: "#app",
+	data: {
+	},
+	mounted: function () {
+	},
+	methods: {
+		onBuy () {
+			this.$refs.dev.$emit('update');
+		}
+	}
+});
+</script>
+
+<!-- 
+<{if $loginReward==1 }>
+<script type="text/javascript">
+show_message('登录奖励', '恭喜您得到 4000 金币奖励。每两小时登录一次游戏即可获得！');
+</script>
+<{/if}> -->

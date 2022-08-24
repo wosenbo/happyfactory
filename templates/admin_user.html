@@ -1,0 +1,32 @@
+<{include file="admin_header.html"}>
+
+<table width="90%" cellspacing="0" cellpadding="3" border="0">
+<tr>
+  <th>UID</th>
+  <th>玩家帐号</th>
+  <th>管理等级</th>
+  <th>站点ID</th>
+  <th>操作</th>
+</tr>
+<{section name=loop loop=$userList}>
+<tr>
+  <td><{$userList[loop].uid}></td>
+  <td><{$userList[loop].username}></td>
+  <td><{$userList[loop].admin_level}></td>
+  <td><{$userList[loop].siteid}></td>
+  <td>
+    <{if $userList[loop].status == "0"}>
+    <a href="admin.php?m=user&a=lock&flag=1&uid=<{$userList[loop].uid}>">禁止登录</a>
+    <{else}>
+    <a href="admin.php?m=user&a=lock&flag=0&uid=<{$userList[loop].uid}>">允许登录</a>
+    <{/if}>
+  </td>
+</tr>
+<{sectionelse}>
+<tr>
+  <td colspan="4">还没有玩家加入游戏！</td>
+</tr>
+<{/section}>
+</table>
+
+<p>共有玩家： <strong><font color="red"><{$playerCount}></font></strong> 人.</p>

@@ -1,0 +1,17 @@
+<ul>
+<{section name=fact loop=$factoryList}>
+<li class="product_item">
+<{if $factoryList[fact].status == "1"}>
+<a href="make.php"><img src="<{$app_url}>/images/factory/<{$factoryList[fact].pic_act}>" border="0"></a><br />
+ <{$factoryList[fact].factoryname}><br />
+ <a href="make.php">进入生产&gt;&gt;&gt;</a>
+<{else}>
+<a href="javascript:;" onclick="factory_buy(<{$factoryList[fact].factid}>)"><img src="<{$app_url}>/images/factory/<{$factoryList[fact].pic}>" border="0"></a><br />
+ <{$factoryList[fact].factoryname}><br />
+ <a href="javascript:;" onclick="factory_buy(<{$factoryList[fact].factid}>)" style="color:red;font-weight:bold">购买</a>
+<{/if}>
+</li>
+<{sectionelse}>
+<li>没有生产线数据！</li>
+<{/section}>
+</ul>

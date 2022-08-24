@@ -1,0 +1,131 @@
+<{include file="header.html"}>
+
+<style type="text/css">
+.stat { padding: 5px; background: #f7f7f7; }
+.stat em { color: #f00; font-weight: bold; }
+</style>
+
+<div id="app" class="container">
+	<ul class="g-tab">
+		<li v-for="cate in categories"><a @click="changeCategory(cate.id)">{{ cate.category }}</a></li>
+	</ul>
+
+	<p class="stat">仓库商品总价值：<em>{{ totalPrice }}</em></p>
+
+	<ul class="product-list clearfix">
+		<li v-for="p in products" class="product-item">
+			<div><a @click="sell(p)"><img :src="'images/product/' + p.pic"></a></div>
+			<div class="title">
+				<a @click="sell(p)">{{ p.productname }}</a>
+				<span class="count">({{ p.count }})</span>
+			</div>
+		</li>
+	</ul>
+
+	<div v-if="showSellDialog" id="sellDialog" class="dialog">
+		<div class="dialog-header">出售<strong>{{ sellProduct.productname }}</strong></div>
+		<div class="dialog-body">
+			<input type="number" v-model="sellAmount">
+		</div>
+		<p class="dialog-footer">
+			<button @click="confirmSell">出售</button>
+			<a @click="showSellDialog=false">取消</a>
+		</p>
+	</div>
+</div>
+
+<script type="text/javascript">
+var app = new Vue({
+  el: "#app",
+  data: {
+  	cateId: 0,
+    categories: [
+      {id: 0, category: '全部'}
+    ],
+    products: [],
+    totalPrice: 0,
+    showSellDialog: false,
+    sellProduct: null,
+    sellAmount: 0
+  },
+  mounted: function() {
+  	this.initData();
+  	this.listProduct();
+  },
+  methods: {
+    initData(){
+      $.getJSON('store.php?action=category', (res) => {
+        if(res.errcode == 0){
+          $.each(res.categories, (index, cate) => {
+            this.$data.categories.push(cate);
+          });
+        }
+      });
+
+      this.getStat();
+    },
+    changeCategory(cateId){
+    	console.log(cateId);
+    	this.$data.cateId = cateId;
+    	this.listProduct();
+    },
+    getStat(){
+    	$.getJSON('warehouse.php?action=stat', (res) => {
+    		if(res.errcode == 0){
+    			this.$data.totalPrice = res.total_price;
+    		}
+    	});
+    },
+    listProduct(){
+      var data = {
+        'cateid': this.$data.cateId,
+        'ajax': 1
+      };
+      $.getJSON('warehouse.php', data, (res) => {
+        if(res.errcode == 0){
+          this.$data.products = res.products;
+        }
+      });
+    },
+    sell(product){
+    	this.$data.sellProduct = product;
+    	this.$data.sellAmount = 0;
+    	this.$data.showSellDialog = true;
+    },
+    confirmSell(){
+    	let product = this.$data.sellProduct;
+    	let amount = parseInt(this.$data.sellAmount);
+    	if (isNaN(amount) || amount < 1) {
+    		alert('出售数量不能小于1');
+    		return;
+    	}
+    	if (amount > product.count) {
+    		alert('出售数量不能超出库存数量');
+    		return;
+    	}
+    	var data = {
+    		'action': 'sell',
+    		'pid': product.pid,
+    		'amount': amount
+    	};
+    	$.ajax({
+    		url: 'warehouse.php',
+    		type: 'post',
+    		dataType: 'json',
+    		data: data,
+    		success: (res) => {
+    			if(res.errcode == 0){
+    				this.$data.showSellDialog = false;
+    				this.listProduct();
+    				this.getStat();
+    				mainApp.getUser();
+    			}
+    		},
+    		error: () => {
+    			alert('请求失败');
+    		}
+    	});
+    }
+  }
+});
+</script>

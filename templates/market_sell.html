@@ -1,0 +1,92 @@
+<{include file="header.html"}>
+<{include file="market_header.html"}>
+
+<div id="app" class="container">
+  <table>
+    <tr>
+      <td width="200" valign="top"><{include file="market_left.html"}></td>
+      <td valign="top">
+        <table width="95%" cellspacing="0" cellpadding="3" align="center" border="0">
+          <tr>
+            <th height="30"><strong>物品名称</strong></th>
+            <th><strong>数量</strong></th>
+            <th><strong>商店价格</strong></th>
+            <th><strong>操作</strong></th>
+          </tr>
+          <tr v-for="p in products">
+            <td>{{ p.productname }}</td>
+            <td width="20%">{{ p.count }}</td>
+            <td width="20%">{{ p.price }}</td>
+            <td width="35%">
+              <label>数量<input type="text" v-model="p.sell_amount" size="4"></label>
+              <label>单价<input type="text" v-model="p.sell_price" size="4"></label>
+              <button @click="sell(p)">出售</button>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<script type="text/javascript">
+var app = new Vue({
+  el: "#app",
+  data: {
+    products: []
+  },
+  mounted: function() {
+    this.listProduct();
+  },
+  methods: {
+    listProduct(){
+      $.getJSON('market.php?action=product', (res) => {
+        if (res.errcode == 0) {
+          var products = res.products;
+          $.each(products, (index, product) => {
+            product.sell_amount = 0;
+            product.sell_price = product.price;
+          });
+          this.$data.products = products;
+        }
+      });
+    },
+    sell(product){
+      let count = parseInt(product.count);
+      let sell_amount = parseInt(product.sell_amount);
+      if(isNaN(sell_amount)){
+        alert('出售数量只能为数字');
+        return;
+      }
+      if(sell_amount < 1){
+        alert('出售数量不能小于1');
+        return;
+      }
+      if (sell_amount > count) {
+        alert('出售数量超出库存数量');
+        return;
+      }
+      let data = {
+        action: 'sell',
+        pid: product.pid,
+        amount: sell_amount,
+        price: product.sell_price
+      };
+      $.ajax({
+        url: 'market_do.php',
+        type: 'POST',
+        dataType: 'json',
+        data: data,
+        success: (res) => {
+          if(res.errcode != 0){
+            alert(res.errmsg);
+            return;
+          }
+          product.count -= sell_amount;
+          product.sell_amount = 0;
+        }
+      });
+    }
+  }
+});
+</script>

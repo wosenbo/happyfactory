@@ -1,0 +1,22 @@
+<style type="text/css">
+.item{ text-align:center; float:left; margin:5px; }
+</style>
+
+<table width="90%" cellspacing="0" cellpadding="3" border="0">
+<tr>
+  <td width="30%" align="center" valign="top" rowspan="4"><img src="<{$app_url}>/images/product/<{$pic}>"></td>
+  <td align="left">物品名称：<strong><{$productname}></strong> (LV.<{$level}>)</td>
+</tr>
+<tr><td align="left">单个制造时间：<{$maketime}></td></tr>
+<tr>
+  <td align="left" bgcolor="#F7F7F7">
+  <{section name=pro loop=$productList}>
+  <li class="item">
+    <img src="<{$app_url}>/images/product/<{$productList[pro].pic}>" width="50" height="50" border="0"><br />
+    <{$productList[pro].productname}>(<{$productList[pro].count|default:"0"}>)
+  </li>
+  <{/section}>
+  </td>
+</tr>
+<tr><td align="left">制造数量：<input type="text" id="makecount" size="4" /></td></tr>
+</table>

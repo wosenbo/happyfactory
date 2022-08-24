@@ -1,0 +1,242 @@
+<{include file="header.html"}>
+
+<style type="text/css">
+.fact-name { font-size:14px; color:#FFFFFF; font-weight:bold; }
+.level{ color:#0F0; }
+.op { font-size: 13px; text-align: center; }
+
+.factory-item {
+	height: 26px;
+	width: 807px;
+	background:url(<{$app_url}>/images/factory_title.gif);
+}
+.make-item { margin-right: 5px; }
+</style>
+
+<div id="app" class="container">
+	<template v-for="factory, index in factories">
+		<div style="border: 1px solid #ddd; margin-bottom: 10px;">
+			<factory-item
+				v-bind:factory="factory"
+				@upgrade="upgrade">
+			</factory-item>
+
+			<table width="807" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+				  <td width="27" height="180" valign="top"><img src="images/factory_left.gif"></td>
+				  <td width="180" valign="top">
+				  	<div style="margin: 5px;">
+					  	<product-item
+					  		v-for="product in factory.products"
+					  		v-bind:product="product"
+					  		v-bind:index="index"
+					  		@makenew="reloadProcess">
+					  	</product-item>
+					  </div>
+				  </td>
+				  <td width="51" valign="top"><img src="images/factory_doing.gif"></td>
+				  <td valign="top">
+			  		<process-list
+			  			v-bind:fid="factory.factid"
+			  			ref="proc">
+			  		</process-list>
+				  </td>
+				</tr>
+			</table>
+		</div>
+	</template>
+</div>
+
+<script src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.min.js"></script>
+<script type="text/javascript">
+Vue.component('factory-item', {
+	props: ['factory'],
+	data(){
+		return {
+			factory1: null
+		}
+	},
+	mounted:function(){
+		this.$data.factory = this.$props.factory;
+	},
+	methods:{
+		upgrade(){
+			if(this.$data.factory.status == 1){
+				return;
+			}
+			let data = {op: 'upgrade', 'factid': this.$data.factory.factid};
+			$.ajax({
+				url: 'make.php',
+				type: 'POST',
+				dataType: 'json',
+				data: data,
+				success: (res) => {
+					if(res.errcode != 0){
+						alert(res.errmsg);
+						return;
+					}
+					this.$data.factory.level = res.new_level;
+					this.$data.factory.status = res.status;
+					this.$emit('upgrade', this.$data.factory);
+				}
+			});
+		}
+	},
+	template: `
+		<div class="factory-item">
+			<table width="807" height="26" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<td width="190">&nbsp;</td>
+					<td width="170">
+						<span class="fact-name">{{factory.factoryname}}</span>
+						<span class="level">(Lv.{{factory.level}})</span>
+					</td>
+					<td>
+						<a @click="upgrade"><img :src="'images/levelup' + (factory.status == 0 ? '_act' : '') + '.gif'"></a>
+					</td>
+				</tr>
+			</table>
+		</div>
+	`
+});
+
+Vue.component('process-list', {
+	props: ['fid'],
+	data(){
+		return {
+			timer: null,
+			fid: 0,
+			products: []
+		}
+	},
+	mounted:function(){
+		this.$data.fid = this.$props.fid;
+		this.listProcess();
+
+		this.$nextTick(() => {
+			this.$on('update', () => {
+				this.listProcess();
+			});
+		});
+
+		this.countdown();
+	},
+	methods:{
+		listProcess(){
+			let data = {op: 'process', factid: this.$data.fid};
+			$.getJSON('make.php', data, (res) => {
+				if(res.errcode == 0){
+					this.$data.products = res.tasks;
+					this.countdown();
+				}
+			});
+		},
+		countdown(){
+			clearInterval(this.$data.timer);
+			this.$data.timer = setInterval(() => {
+				var all_done = true;
+				$.each(this.$data.products, (index, product) => {
+					if(product.status=='1'){
+						return;
+					}
+					all_done = false;
+					product.remain--;
+					if(product.remain <= 0){
+						product.status = '1';
+					}
+				});
+				if (all_done) {
+					clearInterval(this.$data.timer);
+				}
+			}, 1000);
+		},
+		save(product){
+			let data = {op: 'save', 'proc_id': product.id, 'factid': this.$data.fid};
+			$.ajax({
+				url: 'make.php',
+				type: 'post',
+				dataType: 'json',
+				data: data,
+				success: (res) => {
+					if(res.errcode == 0){
+						this.listProcess();
+					}
+				}
+			});
+		}
+	},
+	template: `
+		<ul>
+			<li v-for="product in products" class="product-item">
+				<div><img :src="'images/product/' + product.pic"></div>
+				<p class="title">{{ product.productname }}</p>
+				<p v-if="product.status == 1" class="op"><a @click="save(product)">放入仓库</a></p>
+				<p v-else class="op">剩余 {{ product.remain }} 秒</p>
+			</li>
+		</ul>
+	`
+});
+
+Vue.component('product-item', {
+	props: ['product', 'index'],
+	data(){
+		return {
+			index: 0
+		}
+	},
+	mounted:function(){
+		this.$data.index = this.$props.index;
+	},
+	methods: {
+		make(product){
+			let data = {
+				op: 'makenew',
+				makeid: product.makeid,
+				count: 1
+			};
+
+			$.ajax({
+				url: 'make.php',
+				type: 'POST',
+				dataType: 'json',
+				data: data,
+				success: (res) => {
+					if(res.errcode != 0){
+						alert(res.errmsg);
+						return;
+					}
+					this.$emit('makenew', this.$data.index);
+				}
+			});
+		}
+	},
+	template: `
+		<a @click="make(product)" class="make-item">{{ product.productname }}</a>
+	`
+});
+
+var app = new Vue({
+	el: "#app",
+	data: {
+		factories: [],
+	},
+	mounted: function() {
+		this.listFactory();
+	},
+	methods: {
+		listFactory(){
+			$.getJSON('make.php?op=factory', (res) => {
+				if(res.errcode == 0){
+					this.$data.factories = res.factories;
+				}
+			});
+		},
+		reloadProcess(index){
+			this.$refs.proc[index].$emit('update');
+		},
+		upgrade(factory){
+			mainApp.getUser();
+		}
+	}
+});
+</script>

@@ -1,0 +1,69 @@
+<{include file="header.html"}>
+<{include file="market_header.html"}>
+
+<script type="text/javascript">
+function product_move(marketid)
+{
+	var ajax = new Ajax();
+	ajax.responseType = Ajax.MYML;
+	ajax.ondone = function(data)
+	{
+		show_message('物品下架', data);
+	}
+	ajax.onerror = function(data)
+	{
+		show_message('物品下架', '操作失败，请重试！');
+	}
+	var params = {'action':'move', 'marketid':marketid};
+	ajax.post('market_do.php', params);
+}
+</script>
+
+<div id="app" class="container">
+  <table width="800" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td width="200" valign="top">
+      <{include file="market_left.html"}>
+      </td>
+      <td valign="top">
+        <table width="95%" cellspacing="0" cellpadding="3" align="center" border="0">
+          <tr>
+            <th>物品名称</th>
+            <th width="20%">数量</th>
+            <th width="20%">商店价格</th>
+            <th width="15%">操作</th>
+          </tr>
+          <tr v-for="p in products">
+            <td>{{ p.productname }}</td>
+            <td>{{ p.count }}</td>
+            <td>{{ p.price }}</td>
+            <td>
+              <button type="button">下架</button>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<script type="text/javascript">
+var app = new Vue({
+  el: "#app",
+  data: {
+    products: [],
+  },
+  mounted: function() {
+    this.listProduct();
+  },
+  methods: {
+    listProduct(){
+      $.getJSON('market.php?action=sell', (res) => {
+        if(res.errcode == 0){
+          this.$data.products = res.products;
+        }
+      });
+    }
+  }
+});
+</script>

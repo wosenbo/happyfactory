@@ -1,0 +1,33 @@
+<{include file="header.html"}>
+
+<div class="container">
+  <div style="padding:5px; font-size:14px;">
+    <a href="topuser.php?type=0">站内</a> | 
+    <a href="topuser.php?type=1">全站</a>
+  </div>
+
+  <div style="padding:5px;margin:10px 5px 10px 5px;background:#FFC;border:#F60 1px solid;">
+    说明：排行榜不列出15天内没有登录的用户。
+  </div>
+
+  <table width="98%" cellpadding="3" cellspacing="0" border="0" align="center">
+    <tr>
+      <td>排行</td>
+      <td>玩家</td>
+      <td>等级</td>
+      <td>金钱</td>
+    </tr>
+    <{section name=loop loop=$top_user}>
+    <tr <{if $top_user[loop].uid == $uid}>style="background:#EAEAEA;font-size:14px;"<{/if}>>
+      <td><{$top_user[loop].topid}></td>
+      <td><{$top_user[loop].username}></td>
+      <td><{$top_user[loop].level|default:"0"}></td>
+      <td><{$top_user[loop].money|default:"0"}></td>
+    </tr>
+    <{sectionelse}>
+    <tr>
+      <td colspan="4">暂无排行数据！</td>
+    </tr>
+    <{/section}>
+  </table>
+</div>

@@ -1,0 +1,93 @@
+<style type="text/css">
+/* base */
+body,ul,p,h1,h2,h3,h4,h5,h6 { margin: 0; padding: 0; }
+a{ color:#555555; text-decoration:underline; cursor:pointer; }
+a:hover{ color:#FF6600; text-decoration:none; }
+ul { list-style: none; }
+table { width: 100%; }
+tr { text-align: left; }
+
+/* common */
+.container { width: 805px; position: relative; }
+.clearfix:after { clear: both; display: block; visibility: hidden; content: "."; height: 0; }
+.g-tab { margin: 10px 0; }
+.g-tab li { display: inline; margin-left: 5px; }
+
+/* header */
+#mainApp { position: relative; }
+.app-nav { height: 69px; list-style: none; margin: 0; padding: 0; }
+.app-nav li { float: left; }
+.user-info { margin:2px; padding:10px; background:#F7F7F7; border:#EAEAEA 1px solid; width:780px; }
+.user-info span { margin-right: 20px; }
+
+/* component */
+.dialog { background: #f7f7f7; border-radius: 5px; position: absolute; top: 10%; left: 40%; padding: 15px; border-radius: 8px; box-shadow: 3px 3px 15px #000; }
+.dialog-header { padding: 5px; }
+.dialog-body { padding: 5px; }
+.dialog-footer { padding: 5px; }
+
+/* module */
+.product-item { width:98px; height:160px; margin:5px; float:left; }
+.product-item a { cursor:pointer; text-decoration: none; }
+.product-item .title { text-align:center; font-size: 12px; }
+.product-item .price { color: #f00; }
+.product-item .count { color: #666; }
+</style>
+
+<script type="text/javascript" src="https://cdn.bootcss.com/jquery/2.2.2/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.min.js"></script>
+
+<div id="mainApp">
+	<div>
+		您的 ID 是 <strong>{{ user.uid }}</strong>，如果遇到问题请向管理员提供此 ID。
+		<a v-if="user.admin_level == 'ADMIN'" href="admin.php">管理</a>
+		<a href="http://uchome.developer.manyou.com/uchome/cp.php?ac=userapp&my_suffix=%2Fappcomment%2Flist%3FuId%3D397329017%26appId%3D1033346">留言板</a>
+	</div>
+
+	<ul class="app-nav">
+		<li><img src="images/logo.gif"></li>
+		<li v-for="menu, k in menus">
+			<a :href="menu.url"><img :src="'images/' + menu.icon + (k == hoverMenuIndex ? '_act' : '') + '.gif'" @mouseout="hoverMenuIndex = null" @mouseover="hoverMenuIndex = k"></a>
+		</li>
+	</ul>
+
+	<div class="user-info">
+		<span>帐号：{{ user.username }}</span>
+		<span>积分：{{ user.empiricnow }}/{{ user.empiric }}</span>
+		<span>等级：{{ user.level }}</span>
+		<span>金币：{{ user.money }}</span>
+	</div>
+</div>
+
+<script>
+var mainApp = new Vue({
+	el: "#mainApp",
+	data: {
+		isloading: false,
+		user: {},
+		hoverMenuIndex: null,
+		menus: [
+			{icon: 'factory', url: 'index.php'},
+			{icon: 'market', url: 'market.php'},
+			{icon: 'store', url: 'store.php'},
+			{icon: 'make', url: 'make.php'},
+			{icon: 'warehouse', url: 'warehouse.php'},
+			{icon: 'task', url: 'task.php'},
+			{icon: 'friend', url: 'friend.php'},
+			{icon: 'top', url: 'topuser.php'},
+		]
+	},
+	mounted: function() {
+		this.getUser();
+	},
+	methods: {
+		getUser(){
+			$.getJSON('user.php?action=info', (res) => {
+				if(res.errcode == 0){
+					this.$data.user = res.user;
+				}
+			});
+		}
+	}
+});
+</script>

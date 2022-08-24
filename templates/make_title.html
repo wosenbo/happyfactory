@@ -1,0 +1,13 @@
+<table width="807" height="26" cellspacing="0" cellpadding="0" border="0">
+<tr>
+  <td width="190">&nbsp;</td>
+  <td width="170"><span class="title"><{$factoryname}></span><span class="level">(Lv.<{$level}>)</span></td>
+  <td>
+  <{if $status == 0}>
+  <img src="<{$app_url}>/images/levelup.gif" border="0">
+  <{else}>
+  <img src="<{$app_url}>/images/levelup_act.gif" border="0" style="cursor:hand" onclick="levelup(<{$factid}>)">
+  <{/if}>
+  </td>
+</tr>
+</table>

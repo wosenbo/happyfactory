@@ -1,0 +1,31 @@
+<{include file="admin_header.html"}>
+
+<table width="90%" cellspacing="0" cellpadding="3" border="0">
+<tr>
+  <th>ID</th>
+  <th>标题</th>
+  <th>内容</th>
+  <th>发布日期</th>
+  <th>点击率</th>
+  <th>操作</th>
+</tr>
+<{section name=changeLogIndex loop=$changeLogList}>
+<tr>
+  <td><{$changeLogList[changeLogIndex].id}></td>
+  <td><{$changeLogList[changeLogIndex].title}></td>
+  <td><{$changeLogList[changeLogIndex].content}></td>
+  <td><{$changeLogList[changeLogIndex].dateline}></td>
+  <td><{$changeLogList[changeLogIndex].hits}></td>
+  <td>
+    <a href="admin.php?m=changelog&a=edit&id=<{$changeLogList[changeLogIndex].id}>">编辑</a> | 
+    <a href="admin.php?m=changelog&a=remove&id=<{$changeLogList[changeLogIndex].id}>">删除</a>
+  </td>
+</tr>
+<{sectionelse}>
+<tr>
+  <td>没有更新日志！</td>
+</tr>
+<{/section}>
+</table>
+
+<p><a href="admin.php?m=changelog&a=add">添加更新日志</a></p>
