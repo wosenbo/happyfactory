@@ -1,4 +1,5 @@
 <?php
+
 function get_product_categories() {
 	global $db;
 	static $p_categories = null;
