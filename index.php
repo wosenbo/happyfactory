@@ -50,6 +50,7 @@ function get_advises($uid) {
 	return $advises;
 }
 
+require_once './vendor/autoload.php';
 require_once './include/api.php';
 require_once './include/user.func.php';
 
