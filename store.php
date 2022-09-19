@@ -20,7 +20,7 @@ function get_products($cate_id) {
 	if ($cate_id > 0) {
 		$sql .= " AND cateid = '{$cate_id}'";
 	}
-	$products = [];
+	$products = array();
 	$query = $db->query($sql);
 	while ($row = $db->fetch_array($query)) {
 		$products[] = $row;
@@ -140,7 +140,7 @@ switch(gp('action'))
 		$ajax = intval(gp('ajax', 0));
 		if ($ajax) {
 			$products = get_products($cate_id);
-			json_result(['products' => $products]);
+			json_result(array('products' => $products));
 		}
 		$smarty->display('store.html');
 }

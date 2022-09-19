@@ -49,7 +49,7 @@ switch ($action) {
 			}
 			$smarty->assign('updated', '1');
 		}
-		
+
 		$friendQuery = $db->query("SELECT f.uid,f.fuid,u.username FROM game_friends f ".
 								  "LEFT JOIN game_users u ON f.fuid = u.uid ".
 								  "WHERE f.uid = $uid");
