@@ -32,5 +32,3 @@ switch($action) {
 		$smarty->display('invite.html');
 		break;
 }
-
-?>
