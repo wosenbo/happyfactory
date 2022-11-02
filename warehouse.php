@@ -86,39 +86,6 @@ switch(gp('action')) {
 		}
 		$db->query("UPDATE game_userproperty SET money = money + {$warehouse['total_price']} WHERE uid = '{$uid}'");
 		json_success();
-
-
-		// $pid = gp('pid');
-		// $count = intval(gp('count', 0));
-		// if($count <= 0)
-		// {
-		// 	echo '请输入正确的出售数量！';
-		// }
-		// else
-		// {
-		// 	// $sql = "SELECT id,uid,pid,count FROM game_warehouses WHERE uid=$uid AND pid=$pid";
-		// 	$sql = "SELECT w.*,p.productname,p.price FROM game_warehouses w LEFT JOIN game_products p ".
-		// 			"ON w.pid=p.pid WHERE w.uid=$uid AND w.pid=$pid";
-		// 	$warehouse = $db->fetch_first($sql);
-		// 	if($count > $warehouse['count'])
-		// 	{
-		// 		echo '您没有足够的物品出售，请重新输入要出售的物品数量！';
-		// 	}
-		// 	else
-		// 	{
-		// 		$totalPrice = $count * $warehouse['price'];
-		// 		if($count == $warehouse['count'])
-		// 		{
-		// 			$db->query("DELETE FROM game_warehouses WHERE uid=$uid AND pid=$pid");
-		// 		}
-		// 		else
-		// 		{
-		// 			$db->query("UPDATE game_warehouses SET count=count-$count WHERE uid=$uid AND pid=$pid");
-		// 		}
-		// 		$db->query("UPDATE game_userproperty SET money=money+$totalPrice WHERE uid=$uid");
-		// 		echo "成功出售了 $count 个 ". $warehouse['productname'];
-		// 	}
-		// }
 		break;
 
 	case 'stat':
@@ -131,24 +98,6 @@ switch(gp('action')) {
 		if($ajax){
 			json_result(['products' => get_warehouses($uid, $cate_id)]);
 		}
-		// $cid = gp('cid', 0);
-		// $sql = "SELECT id,category FROM game_productcategory";
-		// $query = $db->query($sql);
-		// $categorys = array();
-		// while($row = $db->fetch_array($query)) {
-		// 	$categorys[] = $row;
-		// }
-		
-		// $query = $db->query("SELECT * FROM game_warehouses WHERE uid = '$uid'");
-		// $list = array();
-		// while($row = $db->fetch_array($query)) {
-		// 	$list[] = $row;
-		// }
-
-		// $smarty->assign('categorys', get_categories());
-		// $smarty->assign('warehouse_list', get_warehouses($uid));
-		// $smarty->assign('warehouse', $warehouse);
 		$smarty->display('warehouse.html');
 		break;
 }
-?>

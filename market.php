@@ -156,4 +156,3 @@ switch($module){
 		// $smarty->assign('market_list', $market_list);
 		$smarty->display('market.html');
 }
-?>

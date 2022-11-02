@@ -1,7 +1,7 @@
 <?php
 function json_result($data, $errmsg = '', $errcode = 0) {
 	if (!is_array($data)) {
-		$data = [];
+		$data = array();
 	}
 	$data['errcode'] = $errcode;
 	$data['errmsg'] = $errmsg;

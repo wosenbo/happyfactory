@@ -39,5 +39,3 @@ switch($action) {
 		$smarty->assign('factoryList', $factoryList);
 		$smarty->display('factory_list.html');
 }
-
-?>

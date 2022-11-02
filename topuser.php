@@ -27,5 +27,3 @@ require_once './include/common.inc.php';
 $site_id = gp('site_id', 100);
 $smarty->assign('top_user', get_top_users($site_id));
 $smarty->display('topuser.html');
-
-?>
