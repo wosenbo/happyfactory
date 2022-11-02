@@ -59,27 +59,3 @@ switch ($action) {
 		$smarty->assign('friend_list', $friend_list);
 		
 		$smarty->display('friend.html');
-		/*
-		$friend = $db->fetch_first("SELECT COUNT(*) AS fcount FROM game_friends WHERE uid = $fuid");
-		if($friend['fcount'] == 0)
-		{
-			$friends = $my->api_client->friend_getAppUsers();
-			foreach($friends as $fuid)
-			{
-				$db->query("INSERT INTO game_friends(uid,fuid) VALUES ($uid,$fuid)");
-			}
-			$smarty->assign('updated', '1');
-		}
-		
-		$result = $db->query("SELECT f.uid,f.fuid,u.username FROM game_friends f ".
-							 "LEFT JOIN game_users u ON f.fuid=u.uid ".
-							 "WHERE f.uid=$uid");
-		while($row = $db->fetch_array($result))
-		{
-			$friend_list[] = array('userid'=> $row['fuid'], 'username'=>$row['username']);
-		}
-		
-		$smarty->assign('userId', $fuid);
-		$smarty->assign('friend_list', $friend_list);
-		$smarty->display('friend.html');
-		*/
