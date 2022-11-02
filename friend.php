@@ -83,4 +83,3 @@ switch ($action) {
 		$smarty->assign('friend_list', $friend_list);
 		$smarty->display('friend.html');
 		*/
-}

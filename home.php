@@ -77,5 +77,3 @@ $smarty->assign('adviceList', $adviceList);
 
 $smarty->display('index.html');
 ?>
-
-*/

@@ -151,4 +151,3 @@ switch(gp('action')) {
 		$smarty->display('warehouse.html');
 		break;
 }
-?>

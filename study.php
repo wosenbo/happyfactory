@@ -52,4 +52,3 @@ switch ($action) {
 		$smarty->assign('studyLevels', $studyLevels);
 		$smarty->display('study.html');
 }
-?>
