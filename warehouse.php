@@ -91,7 +91,7 @@ switch(gp('action')) {
 	case 'stat':
 		json_result(['total_price' => get_warehouse_price($uid)]);
 		break;
-	
+
 	default:
 		$cate_id = gp('cateid', 0);
 		$ajax = gp('ajax', 0);
