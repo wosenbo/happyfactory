@@ -28,4 +28,3 @@ function DateDiff($endtime, $starttime, $unit='')
 		return false;
 	}
 }
-?>

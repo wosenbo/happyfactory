@@ -28,7 +28,6 @@ if(function_exists('date_default_timezone_set')) {
 }
 
 define('ROOT_PATH', dirname(dirname(__FILE__)));
-
 require_once ROOT_PATH.'/./config.inc.php';
 require_once ROOT_PATH.'/./libs/Smarty.class.php';
 require_once ROOT_PATH.'/./include/Manyou_v0.5.php';

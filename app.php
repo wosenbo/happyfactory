@@ -6,6 +6,7 @@ require_once INC_PATH .'/Manyou_v0.5.php';
 require_once INC_PATH .'/db_mysql.class.php';
 
 $my = new Manyou($api_key, $secret);
+
 $uid = (int) $my->get_loggedin_user();
 
 $db = new dbstuff();
