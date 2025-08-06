@@ -8,79 +8,79 @@
 </div>
 
 <script>
-const { ref, onMounted, inject } = Vue;
 
 const FactoryList = {
-	setup(props, { emit }) {
-		const factories = ref([]);
-		const loading = ref(false);
-		const error = ref(null);
-		
-		const api = inject('api') || {
-			get: (url, params) => $.getJSON(url, params),
-			post: (url, data) => $.ajax({ url, type: 'POST', dataType: 'json', data })
+	name: 'factory-list',
+	data() {
+		return {
+			factories: [],
+			loading: false,
+			error: null
 		};
+	},
+	mounted() {
+		this.fetchFactories();
+	},
+	methods: {
+		fetchFactories() {
+			this.loading = true;
+			this.error = null;
 
-		const fetchFactories = async () => {
-			try {
-				loading.value = true;
-				error.value = null;
-				const response = await api.get('index.php', { action: 'factory' });
-				
-				if (response.errcode === 0) {
-					factories.value = response.factories;
-				} else {
-					throw new Error(response.errmsg || '获取工厂列表失败');
-				}
-			} catch (err) {
-				error.value = err.message;
-				console.error('获取工厂列表失败:', err);
-			} finally {
-				loading.value = false;
-			}
-		};
+			$.getJSON('index.php', { action: 'factory' })
+				.done((response) => {
+					if (response.errcode === 0) {
+						this.factories = response.factories;
+					} else {
+						throw new Error(response.errmsg || '获取工厂列表失败');
+					}
+				})
+				.fail((xhr, textStatus, errorThrown) => {
+					this.error = errorThrown || '获取工厂列表失败';
+					console.error('获取工厂列表失败:', errorThrown);
+				})
+				.always(() => {
+					this.loading = false;
+				});
+		},
 
-		const buyFactory = async (factory) => {
-			if (loading.value) return;
-			
-			try {
-				loading.value = true;
-				const response = await api.post('factory.php', {
+		buyFactory(factory) {
+			if (this.loading) return;
+
+			this.loading = true;
+
+			$.ajax({
+				url: 'factory.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {
 					action: 'buy',
 					factid: factory.factid
-				});
-
-				if (response.errcode === 0) {
-					const targetFactory = factories.value.find(f => f.factid === factory.factid);
-					if (targetFactory) {
-						targetFactory.status = 1;
-					}
-					
-					emit('buy');
-					
-					window.showMessage?.('购买成功', `成功购买 ${factory.name || '工厂'}！`);
-				} else {
-					throw new Error(response.errmsg || '购买失败');
 				}
-			} catch (err) {
-				alert(err.message);
-				console.error('购买工厂失败:', err);
-			} finally {
-				loading.value = false;
-			}
-		};
+			})
+				.done((response) => {
+					if (response.errcode === 0) {
+						const targetFactory = this.factories.find(f => f.factid === factory.factid);
+						if (targetFactory) {
+							targetFactory.status = 1;
+						}
 
-		onMounted(() => {
-			fetchFactories();
-		});
+						this.$emit('buy');
 
-		return {
-			factories,
-			loading,
-			error,
-			buyFactory,
-			fetchFactories
-		};
+						if (window.showMessage) {
+							window.showMessage('购买成功', `成功购买 ${factory.name || '工厂'}！`);
+						}
+					} else {
+						throw new Error(response.errmsg || '购买失败');
+					}
+				})
+				.fail((xhr, textStatus, errorThrown) => {
+					alert(errorThrown || '购买失败');
+					console.error('购买工厂失败:', errorThrown);
+				})
+				.always(() => {
+					this.loading = false;
+				});
+		}
 	},
 	template: `
 		<div class="mod mod-factory">
@@ -133,115 +133,114 @@ const FactoryList = {
 };
 
 const DevCenter = {
-	setup(props, { emit }) {
-		const type = ref(null);
-		const userStudy = ref(null);
-		const levelInfo = ref(null);
-		const studies = ref([]);
-		const showUpgradeDialog = ref(false);
-		const loading = ref(false);
-		const error = ref(null);
-
-		const api = inject('api') || {
-			get: (url, params) => $.getJSON(url, params),
-			post: (url, data) => $.ajax({ url, type: 'POST', dataType: 'json', data })
+	name: 'dev-center',
+	data() {
+		return {
+			type: null,
+			userStudy: null,
+			levelInfo: null,
+			studies: [],
+			showUpgradeDialog: false,
+			loading: false,
+			error: null
 		};
+	},
+	mounted() {
+		this.fetchStudies();
+	},
+	methods: {
+		fetchStudies() {
+			this.loading = true;
+			this.error = null;
 
-		const fetchStudies = async () => {
-			try {
-				loading.value = true;
-				error.value = null;
-				const response = await api.get('index.php?action=study');
-				
-				if (response.errcode === 0) {
-					studies.value = response.studies;
-					userStudy.value = response.user_study;
-				} else {
-					throw new Error(response.errmsg || '获取研发信息失败');
-				}
-			} catch (err) {
-				error.value = err.message;
-				console.error('获取研发信息失败:', err);
-			} finally {
-				loading.value = false;
-			}
-		};
+			$.getJSON('index.php?action=study')
+				.done((response) => {
+					if (response.errcode === 0) {
+						this.studies = response.studies;
+						this.userStudy = response.user_study;
+					} else {
+						throw new Error(response.errmsg || '获取研发信息失败');
+					}
+				})
+				.fail((xhr, textStatus, errorThrown) => {
+					this.error = errorThrown || '获取研发信息失败';
+					console.error('获取研发信息失败:', errorThrown);
+				})
+				.always(() => {
+					this.loading = false;
+				});
+		},
 
-		const queryUpgrade = async (upgradeType) => {
-			if (loading.value || !userStudy.value) return;
-			
-			try {
-				loading.value = true;
-				const response = await api.post('study.php', {
+		queryUpgrade(upgradeType) {
+			if (this.loading || !this.userStudy) return;
+
+			this.loading = true;
+
+			$.ajax({
+				url: 'study.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {
 					action: 'upgrade',
 					type: upgradeType
-				});
-
-				if (response.errcode === 0) {
-					levelInfo.value = response.level_info;
-					type.value = upgradeType;
-					showUpgradeDialog.value = true;
-				} else {
-					throw new Error(response.errmsg || '查询升级信息失败');
 				}
-			} catch (err) {
-				alert(err.message);
-				console.error('查询升级信息失败:', err);
-			} finally {
-				loading.value = false;
-			}
-		};
+			})
+				.done((response) => {
+					if (response.errcode === 0) {
+						this.levelInfo = response.level_info;
+						this.type = upgradeType;
+						this.showUpgradeDialog = true;
+					} else {
+						throw new Error(response.errmsg || '查询升级信息失败');
+					}
+				})
+				.fail((xhr, textStatus, errorThrown) => {
+					alert(errorThrown || '查询升级信息失败');
+					console.error('查询升级信息失败:', errorThrown);
+				})
+				.always(() => {
+					this.loading = false;
+				});
+		},
 
-		const upgrade = async () => {
-			if (!type.value) return;
-			
-			try {
-				loading.value = true;
-				const response = await api.post('study.php', {
+		upgrade() {
+			if (!this.type) return;
+
+			this.loading = true;
+
+			$.ajax({
+				url: 'study.php',
+				type: 'POST',
+				dataType: 'json',
+				data: {
 					action: 'upgrade',
 					confirm: 1,
-					type: type.value
-				});
-
-				if (response.errcode === 0) {
-					showUpgradeDialog.value = false;
-					await fetchStudies();
-					window.showMessage?.('升级成功', `研发中心升级成功！`);
-				} else {
-					throw new Error(response.errmsg || '升级失败');
+					type: this.type
 				}
-			} catch (err) {
-				alert(err.message);
-				console.error('升级失败:', err);
-			} finally {
-				loading.value = false;
-			}
-		};
+			})
+				.done((response) => {
+					if (response.errcode === 0) {
+						this.showUpgradeDialog = false;
+						this.fetchStudies();
+						if (window.showMessage) {
+							window.showMessage('升级成功', '研发中心升级成功！');
+						}
+					} else {
+						throw new Error(response.errmsg || '升级失败');
+					}
+				})
+				.fail((xhr, textStatus, errorThrown) => {
+					alert(errorThrown || '升级失败');
+					console.error('升级失败:', errorThrown);
+				})
+				.always(() => {
+					this.loading = false;
+				});
+		},
 
-		const closeDialog = () => {
-			showUpgradeDialog.value = false;
-		};
-
-		// 暴露方法供父组件调用
-		emit('ready', fetchStudies);
-
-		onMounted(() => {
-			fetchStudies();
-		});
-
-		return {
-			studies,
-			userStudy,
-			levelInfo,
-			type,
-			showUpgradeDialog,
-			loading,
-			error,
-			fetchStudies,
-			queryUpgrade,
-			upgrade,
-			closeDialog
-		};
+		closeDialog() {
+			this.showUpgradeDialog = false;
+		}
 	},
 	template: `
 		<div class="mod mod-dev">
@@ -318,31 +317,31 @@ const DevCenter = {
 	`
 };
 
-// 主应用
-const { createApp } = Vue;
-
+// 主应用 - Vue 2 兼容版本
 const App = {
-	setup() {
-		const devCenterRef = ref(null);
-		
-		const handleBuy = () => {
-			if (devCenterRef.value?.fetchStudies) {
-				devCenterRef.value.fetchStudies();
-			}
-		};
-
+	data() {
 		return {
-			devCenterRef,
-			handleBuy
+			devCenterRef: null
 		};
+	},
+	methods: {
+		handleBuy() {
+			if (this.$refs.devCenter && this.$refs.devCenter.fetchStudies) {
+				this.$refs.devCenter.fetchStudies();
+			}
+		}
 	}
 };
 
-// 创建应用
-const app = createApp(App);
-app.component('factory-list', FactoryList);
-app.component('dev-center', DevCenter);
-app.mount('#app');
+// 注册组件
+Vue.component('factory-list', FactoryList);
+Vue.component('dev-center', DevCenter);
+
+// 创建 Vue 2 应用
+new Vue({
+	...App,
+	el: '#app'
+});
 </script>
 
 <!-- 
