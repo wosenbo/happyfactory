@@ -1,0 +1,353 @@
+<{include file="header.html"}>
+
+<link rel="stylesheet" href="templates/assets/css/index.css">
+
+<div id="app" class="container">
+	<factory-list @buy="handleBuy"></factory-list>
+	<dev-center ref="devCenter"></dev-center>
+</div>
+
+<script>
+const { ref, onMounted, inject } = Vue;
+
+const FactoryList = {
+	setup(props, { emit }) {
+		const factories = ref([]);
+		const loading = ref(false);
+		const error = ref(null);
+		
+		const api = inject('api') || {
+			get: (url, params) => $.getJSON(url, params),
+			post: (url, data) => $.ajax({ url, type: 'POST', dataType: 'json', data })
+		};
+
+		const fetchFactories = async () => {
+			try {
+				loading.value = true;
+				error.value = null;
+				const response = await api.get('index.php', { action: 'factory' });
+				
+				if (response.errcode === 0) {
+					factories.value = response.factories;
+				} else {
+					throw new Error(response.errmsg || '获取工厂列表失败');
+				}
+			} catch (err) {
+				error.value = err.message;
+				console.error('获取工厂列表失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		const buyFactory = async (factory) => {
+			if (loading.value) return;
+			
+			try {
+				loading.value = true;
+				const response = await api.post('factory.php', {
+					action: 'buy',
+					factid: factory.factid
+				});
+
+				if (response.errcode === 0) {
+					const targetFactory = factories.value.find(f => f.factid === factory.factid);
+					if (targetFactory) {
+						targetFactory.status = 1;
+					}
+					
+					emit('buy');
+					
+					window.showMessage?.('购买成功', `成功购买 ${factory.name || '工厂'}！`);
+				} else {
+					throw new Error(response.errmsg || '购买失败');
+				}
+			} catch (err) {
+				alert(err.message);
+				console.error('购买工厂失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		onMounted(() => {
+			fetchFactories();
+		});
+
+		return {
+			factories,
+			loading,
+			error,
+			buyFactory,
+			fetchFactories
+		};
+	},
+	template: `
+		<div class="mod mod-factory">
+			<h3>生产线</h3>
+			<div class="main">
+				<div v-if="loading" class="loading-container">
+					<div class="loading"></div>
+					<p>加载中...</p>
+				</div>
+				
+				<div v-else-if="error" class="error-message">
+					{{ error }}
+					<button @click="fetchFactories" class="retry-btn">重试</button>
+				</div>
+				
+				<ul v-else class="product-list clearfix">
+					<li v-for="factory in factories" :key="factory.factid" class="product-item">
+						<template v-if="factory.status === 1">
+							<p>
+								<a href="make.php">
+									<img :src="\`images/factory/\${factory.pic_act}\`" 
+										 :alt="\`\${factory.name || '工厂'} - 已激活\`"
+										 loading="lazy">
+								</a>
+							</p>
+							<p class="title">
+								<a href="make.php" class="btn-enter">进入生产 »</a>
+							</p>
+						</template>
+						
+						<template v-else>
+							<p>
+								<img :src="\`images/factory/\${factory.pic}\`" 
+									 :alt="\`\${factory.name || '工厂'} - 待购买\`"
+									 loading="lazy">
+							</p>
+							<p class="title">
+								<button @click="buyFactory(factory)" 
+										:disabled="loading"
+										class="btn-buy">
+									{{ loading ? '处理中...' : '购买' }}
+								</button>
+							</p>
+						</template>
+					</li>
+				</ul>
+			</div>
+		</div>
+	`
+};
+
+const DevCenter = {
+	setup(props, { emit }) {
+		const type = ref(null);
+		const userStudy = ref(null);
+		const levelInfo = ref(null);
+		const studies = ref([]);
+		const showUpgradeDialog = ref(false);
+		const loading = ref(false);
+		const error = ref(null);
+
+		const api = inject('api') || {
+			get: (url, params) => $.getJSON(url, params),
+			post: (url, data) => $.ajax({ url, type: 'POST', dataType: 'json', data })
+		};
+
+		const fetchStudies = async () => {
+			try {
+				loading.value = true;
+				error.value = null;
+				const response = await api.get('index.php?action=study');
+				
+				if (response.errcode === 0) {
+					studies.value = response.studies;
+					userStudy.value = response.user_study;
+				} else {
+					throw new Error(response.errmsg || '获取研发信息失败');
+				}
+			} catch (err) {
+				error.value = err.message;
+				console.error('获取研发信息失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		const queryUpgrade = async (upgradeType) => {
+			if (loading.value || !userStudy.value) return;
+			
+			try {
+				loading.value = true;
+				const response = await api.post('study.php', {
+					action: 'upgrade',
+					type: upgradeType
+				});
+
+				if (response.errcode === 0) {
+					levelInfo.value = response.level_info;
+					type.value = upgradeType;
+					showUpgradeDialog.value = true;
+				} else {
+					throw new Error(response.errmsg || '查询升级信息失败');
+				}
+			} catch (err) {
+				alert(err.message);
+				console.error('查询升级信息失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		const upgrade = async () => {
+			if (!type.value) return;
+			
+			try {
+				loading.value = true;
+				const response = await api.post('study.php', {
+					action: 'upgrade',
+					confirm: 1,
+					type: type.value
+				});
+
+				if (response.errcode === 0) {
+					showUpgradeDialog.value = false;
+					await fetchStudies();
+					window.showMessage?.('升级成功', `研发中心升级成功！`);
+				} else {
+					throw new Error(response.errmsg || '升级失败');
+				}
+			} catch (err) {
+				alert(err.message);
+				console.error('升级失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		const closeDialog = () => {
+			showUpgradeDialog.value = false;
+		};
+
+		// 暴露方法供父组件调用
+		emit('ready', fetchStudies);
+
+		onMounted(() => {
+			fetchStudies();
+		});
+
+		return {
+			studies,
+			userStudy,
+			levelInfo,
+			type,
+			showUpgradeDialog,
+			loading,
+			error,
+			fetchStudies,
+			queryUpgrade,
+			upgrade,
+			closeDialog
+		};
+	},
+	template: `
+		<div class="mod mod-dev">
+			<h3>研发中心</h3>
+			<div class="main clearfix">
+				<div v-if="loading" class="loading-container">
+					<div class="loading"></div>
+					<p>加载中...</p>
+				</div>
+				
+				<div v-else-if="error" class="error-message">
+					{{ error }}
+					<button @click="fetchStudies" class="retry-btn">重试</button>
+				</div>
+				
+				<template v-else>
+					<ul class="level-list">
+						<li class="title">效率</li>
+						<li v-for="study in studies" 
+							:key="\`eff-\${study.level}\`"
+							:class="{ current: userStudy && study.level === userStudy.elevel }">
+							{{ study.efficiency }}% (Lv.{{ study.level }})
+						</li>
+						<li>
+							<button @click="queryUpgrade(1)" 
+									:disabled="!userStudy || loading"
+									class="btn-upgrade">
+								{{ loading ? '处理中...' : '升级' }}
+							</button>
+						</li>
+					</ul>
+					
+					<ul class="level-list">
+						<li class="title">成本</li>
+						<li v-for="study in studies" 
+							:key="\`cost-\${study.level}\`"
+							:class="{ current: userStudy && study.level === userStudy.clevel }">
+							{{ study.cost }}% (Lv.{{ study.level }})
+						</li>
+						<li>
+							<button @click="queryUpgrade(2)" 
+									:disabled="!userStudy || loading"
+									class="btn-upgrade">
+								{{ loading ? '处理中...' : '升级' }}
+							</button>
+						</li>
+					</ul>
+					
+					<div class="dev-tips">
+						<em>研发中心可以有效的为您提高生产效率并且会降低生产所需的成本！</em>
+						<p>您已拥有了属于您自己的研发中心，在 <a href="make.php">生产中心</a> 里面会有等级标志，
+						表示您可以享受到研发中心给您带来的效率的提升和成本的下降。</p>
+					</div>
+				</template>
+			</div>
+			
+			<!-- 升级对话框 -->
+			<div v-if="showUpgradeDialog" class="dialog-backdrop" @click="closeDialog">
+				<div class="dialog" @click.stop>
+					<div class="dialog-body">
+						升级到 {{ levelInfo?.level }} 级研发中心需要 {{ levelInfo?.price }} 金币，是否需要升级？
+					</div>
+					<div class="dialog-footer">
+						<button @click="upgrade" 
+								:disabled="loading"
+								class="btn-confirm">
+							{{ loading ? '升级中...' : '确认升级' }}
+						</button>
+						<button @click="closeDialog" :disabled="loading">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	`
+};
+
+// 主应用
+const { createApp } = Vue;
+
+const App = {
+	setup() {
+		const devCenterRef = ref(null);
+		
+		const handleBuy = () => {
+			if (devCenterRef.value?.fetchStudies) {
+				devCenterRef.value.fetchStudies();
+			}
+		};
+
+		return {
+			devCenterRef,
+			handleBuy
+		};
+	}
+};
+
+// 创建应用
+const app = createApp(App);
+app.component('factory-list', FactoryList);
+app.component('dev-center', DevCenter);
+app.mount('#app');
+</script>
+
+<!-- 
+<{if $loginReward==1 }>
+<script type="text/javascript">
+show_message('登录奖励', '恭喜您得到 4000 金币奖励。每两小时登录一次游戏即可获得！');
+</script>
+<{/if}> -->

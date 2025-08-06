@@ -1,17 +1,6 @@
 <{include file="header.html"}>
 
-<style type="text/css">
-.mod { margin-bottom: 10px; position: relative; border: 1px solid #ddd; }
-.mod .main { padding: 10px; }
-.mod h3 { background-color: #eaeaea; }
-.mod-dev .lv { border: 1px solid #ccc; width: 35%; float: left; margin-right: 10px; box-shadow: 3px 3px 5px #eaeaea; border-radius: 5px; }
-.mod-dev .lv li { border-bottom: 1px solid #ccc; text-align: center; padding: 5px 0; }
-.mod-dev .lv .cur { background-color: #ff6600; color: #fff; }
-.mod-dev .tips { font-size: 14px; color: #333; }
-.mod-dev .tips em { color: #f00; }
-.mod-dev .lv .title { background-color: #eaeaea; }
-.mod .dialog { position: absolute; padding: 10px; border-radius: 8px; box-shadow: 3px 3px 8px #999; top: 0; left: 200px; top: 100px; }
-</style>
+<link rel="stylesheet" href="templates/assets/css/index.css">
 
 <div id="app" class="container">
 	<factory-list ref="fact" @buy="onBuy"></factory-list>
@@ -19,7 +8,134 @@
 </div>
 
 <script>
-Vue.component('factory-list', {
+const { ref, onMounted, inject } = Vue;
+
+const FactoryList = {
+	setup(props, { emit }) {
+		const factories = ref([]);
+		const loading = ref(false);
+		const error = ref(null);
+		
+		const api = inject('api') || {
+			get: (url, params) => $.getJSON(url, params),
+			post: (url, data) => $.ajax({ url, type: 'POST', dataType: 'json', data })
+		};
+
+		const fetchFactories = async () => {
+			try {
+				loading.value = true;
+				error.value = null;
+				const response = await api.get('index.php', { action: 'factory' });
+				
+				if (response.errcode === 0) {
+					factories.value = response.factories;
+				} else {
+					throw new Error(response.errmsg || '获取工厂列表失败');
+				}
+			} catch (err) {
+				error.value = err.message;
+				console.error('获取工厂列表失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		const buyFactory = async (factory) => {
+			if (loading.value) return;
+			
+			try {
+				loading.value = true;
+				const response = await api.post('factory.php', {
+					action: 'buy',
+					factid: factory.factid
+				});
+
+				if (response.errcode === 0) {
+					// 更新本地状态
+					const targetFactory = factories.value.find(f => f.factid === factory.factid);
+					if (targetFactory) {
+						targetFactory.status = 1;
+					}
+					
+					// 通知父组件
+					emit('buy');
+					
+					// 显示成功消息
+					window.showMessage?.('购买成功', `成功购买 ${factory.name || '工厂'}！`);
+				} else {
+					throw new Error(response.errmsg || '购买失败');
+				}
+			} catch (err) {
+				alert(err.message);
+				console.error('购买工厂失败:', err);
+			} finally {
+				loading.value = false;
+			}
+		};
+
+		onMounted(() => {
+			fetchFactories();
+		});
+
+		return {
+			factories,
+			loading,
+			error,
+			buyFactory,
+			fetchFactories
+		};
+	},
+	template: `
+		<div class="mod mod-factory">
+			<h3>生产线</h3>
+			<div class="main">
+				<div v-if="loading" class="loading-container">
+					<div class="loading"></div>
+					<p>加载中...</p>
+				</div>
+				
+				<div v-else-if="error" class="error-message">
+					{{ error }}
+					<button @click="fetchFactories" class="retry-btn">重试</button>
+				</div>
+				
+				<ul v-else class="product-list clearfix">
+					<li v-for="factory in factories" :key="factory.factid" class="product-item">
+						<template v-if="factory.status === 1">
+							<p>
+								<a href="make.php">
+									<img :src="\`images/factory/\${factory.pic_act}\`" 
+										 :alt="\`\${factory.name || '工厂'} - 已激活\`"
+										 loading="lazy">
+								</a>
+							</p>
+							<p class="title">
+								<a href="make.php" class="btn-enter">进入生产 »</a>
+							</p>
+						</template>
+						
+						<template v-else>
+							<p>
+								<img :src="\`images/factory/\${factory.pic}\`" 
+									 :alt="\`\${factory.name || '工厂'} - 待购买\`"
+									 loading="lazy">
+							</p>
+							<p class="title">
+								<button @click="buyFactory(factory)" 
+										:disabled="loading"
+										class="btn-buy">
+									{{ loading ? '处理中...' : '购买' }}
+								</button>
+							</p>
+						</template>
+					</li>
+				</ul>
+			</div>
+		</div>
+	`
+};
+
+Vue.component('factory-list', FactoryList);
 	data () {
 		return {
 			factory: null,

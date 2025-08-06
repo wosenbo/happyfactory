@@ -92,4 +92,4 @@ if (!$userStudy) {
 	$smarty->assign('userStudy', 1);
 }
 $smarty->assign('adviceList', get_advises($uid));
-$smarty->display('index.html');
+$smarty->display('index-refactored.html');
