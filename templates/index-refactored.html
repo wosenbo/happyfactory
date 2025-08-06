@@ -191,7 +191,7 @@ const DevCenter = {
 						this.type = upgradeType;
 						this.showUpgradeDialog = true;
 					} else {
-						throw new Error(response.errmsg || '查询升级信息失败');
+						alert(response.errmsg || '查询升级信息失败');
 					}
 				})
 				.fail((xhr, textStatus, errorThrown) => {
@@ -226,7 +226,8 @@ const DevCenter = {
 							window.showMessage('升级成功', '研发中心升级成功！');
 						}
 					} else {
-						throw new Error(response.errmsg || '升级失败');
+						this.showUpgradeDialog = false;
+						alert(response.errmsg || '升级失败');
 					}
 				})
 				.fail((xhr, textStatus, errorThrown) => {
