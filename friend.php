@@ -18,15 +18,15 @@ switch ($action) {
 		break;
 	
 	default:
-		$userInfo = $db->fetch_first("SELECT u.*,u_p.*,u_pl.empiric AS uEmpiric FROM game_users u ".
-									 "LEFT JOIN game_userproperty u_p ON u.uid = u_p.uid ".
-									 "LEFT JOIN game_userlevel u_pl ON u_p.level = u_pl.level ".
-									 "WHERE u.uid = $fuid");
+		$userInfo = $db->fetch_first("SELECT u.*,u_p.*,u_pl.empiric AS uEmpiric FROM game_users u "
+									 ."LEFT JOIN game_userproperty u_p ON u.uid = u_p.uid "
+									 ."LEFT JOIN game_userlevel u_pl ON u_p.level = u_pl.level "
+									 ."WHERE u.uid = $fuid");
 		$smarty->assign('userInfo', $userInfo);
 		
-		$makeQuery = $db->query("SELECT m.*,p.productname,p.pic FROM game_makeprocess m ".
-								"LEFT JOIN game_products p ON m.pid = p.pid ".
-								"WHERE m.uid = $fuid");
+		$makeQuery = $db->query("SELECT m.*,p.productname,p.pic FROM game_makeprocess m "
+								."LEFT JOIN game_products p ON m.pid = p.pid "
+								."WHERE m.uid = $fuid");
 		if($makeQuery)
 		{
 			while($makeItem = $db->fetch_array($makeQuery)) {
@@ -34,7 +34,7 @@ switch ($action) {
 									'id' => $makeItem['id'],
 									'uid' => $makeItem['uid'],
 									'productname' => $makeItem['productname'],
-									'pic' => $makeItem['pic'],
+									'pic' => $makeItem['pic']
 									);
 			}
 			$smarty->assign('makeList', $makeList);
@@ -50,12 +50,15 @@ switch ($action) {
 			$smarty->assign('updated', '1');
 		}
 
-		$friendQuery = $db->query("SELECT f.uid,f.fuid,u.username FROM game_friends f ".
-								  "LEFT JOIN game_users u ON f.fuid = u.uid ".
-								  "WHERE f.uid = $uid");
+		$friendQuery = $db->query("SELECT f.uid,f.fuid,u.username FROM game_friends f "
+								  ."LEFT JOIN game_users u ON f.fuid = u.uid "
+								  ."WHERE f.uid = $uid");
 		while($friend = $db->fetch_array($friendQuery)) {
 			$friend_list[] = array('userid' => $friend['fuid'], 'username' => $friend['username']);
 		}
 		$smarty->assign('friend_list', $friend_list);
 		
 		$smarty->display('friend.html');
+		break;
+}
+?>
