@@ -3,9 +3,12 @@
 /**
  * 初始化模板引擎
  */
-function template_init()
+function template_init($smarty = null)
 {
-	global $smarty;
+	// global $smarty;
+	if($smarty === null) {
+		return;
+	}
 	$smarty->template_dir = './templates/';
 	$smarty->compile_dir = './templates_c/';
 	$smarty->cache_dir = './cache/';
@@ -26,11 +29,11 @@ function login_reward()
 		$db->query("UPDATE game_userproperty SET money=money+". LOGIN_REWARD ." WHERE uid = '$uid'");
 		$db->query("UPDATE game_users SET updated='". time() ."' WHERE uid = '$uid'");
 		$smarty->assign('loginReward', 1);
-		
+
 		// 发送feed
 		$feed_message = '登录 <a href="index.php">开心梦工厂</a> 获得 '. LOGIN_REWARD . ' 金币。';
 		$feed_body = '';
-		
+
 		$title_template = '{actor} ' . $feed_message . '';
 		$title_data = '';
 		$body_template = '';
@@ -50,7 +53,7 @@ function login_reward()
 					   $body_general, $image_1, $image_1_link, $image_2, $image_2_link,
 					   $image_3, $image_3_link, $image_4, $image_4_link, $target_ids
 					   );
-		
+
 	} else {
 		$smarty->assign('loginReward', 0);
 	}

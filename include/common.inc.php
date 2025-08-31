@@ -41,7 +41,7 @@ foreach(array('_COOKIE', '_POST', '_GET') as $_request) {
 }
 
 $smarty = new Smarty();
-template_init();
+template_init($smarty);
 $db = new dbstuff();
 $db->connect($dbhost, $dbuser, $dbpwd, $dbname, 0, TRUE, 'utf8');
 
@@ -66,7 +66,7 @@ if(!$userData) {
 	// 				$uid .",". $currentUserData['uch_id'] .",'". $currentUserData['name'] ."','".
 	// 				$currentUserData['admin_level'] ."',". $currentUserData['site'] .",$now)");
 	// $db->query("INSERT INTO game_userproperty(uid) VALUES ($uid)");
-	// $userData = $db->fetch_first($sql);	
+	// $userData = $db->fetch_first($sql);
 }
 
 if($userData['status'] == 1) {
