@@ -8,22 +8,22 @@ class dbstuff {
 
 	public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $pconnect = 0, $halt = TRUE) {
 		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-		
+
 		try {
 			if ($pconnect) {
 				$this->link = mysqli_connect('p:' . $dbhost, $dbuser, $dbpw, $dbname);
 			} else {
 				$this->link = mysqli_connect($dbhost, $dbuser, $dbpw, $dbname);
 			}
-			
+
 			$dbcharset = defined('DB_CHARSET') ? DB_CHARSET : 'utf8mb4';
 			if (defined('API_MODE')) {
 				$dbcharset = 'utf8mb4';
 			}
-			
+
 			mysqli_set_charset($this->link, $dbcharset);
 			mysqli_query($this->link, "SET sql_mode=''");
-			
+
 		} catch (Exception $e) {
 			if ($halt) {
 				$this->halt('Can not connect to MySQL server', $e->getMessage());
@@ -43,11 +43,11 @@ class dbstuff {
 
 	public function execute($params = []) {
 		if (!$this->stmt) return false;
-		
+
 		if (!empty($params)) {
 			$types = '';
 			$bind_params = [];
-			
+
 			foreach ($params as $param) {
 				if (is_int($param)) {
 					$types .= 'i';
@@ -58,11 +58,11 @@ class dbstuff {
 				}
 				$bind_params[] = $param;
 			}
-			
+
 			array_unshift($bind_params, $this->stmt, $types);
 			call_user_func_array('mysqli_stmt_bind_param', $bind_params);
 		}
-		
+
 		mysqli_stmt_execute($this->stmt);
 		$this->querynum++;
 		return $this->stmt;
@@ -75,14 +75,14 @@ class dbstuff {
 			} else {
 				$query = mysqli_query($this->link, $sql, MYSQLI_STORE_RESULT);
 			}
-			
+
 			if (!$query) {
 				throw new Exception(mysqli_error($this->link));
 			}
-			
+
 			$this->querynum++;
 			return $query;
-			
+
 		} catch (Exception $e) {
 			if (in_array(mysqli_errno($this->link), [2006, 2013]) && substr($type, 0, 5) != 'RETRY') {
 				$this->close();
@@ -121,7 +121,7 @@ class dbstuff {
 			$row = mysqli_fetch_row($result);
 			return $row[0] ?? null;
 		}
-		
+
 		$result = $this->query($sql);
 		$row = mysqli_fetch_row($result);
 		return $row[0] ?? null;
@@ -145,7 +145,7 @@ class dbstuff {
 			$data = mysqli_fetch_row($result);
 			return $data[$row] ?? null;
 		}
-		
+
 		$data = mysqli_fetch_row($query);
 		return $data[$row] ?? null;
 	}
@@ -236,9 +236,13 @@ class dbstuff {
 	}
 
 	private function halt($message = '', $sql = '') {
-		$error = mysqli_error($this->link);
-		$errno = mysqli_errno($this->link);
-		
+		$error = "";
+		$errno = "";
+		if($this->link){
+			$error = mysqli_error($this->link);
+			$errno = mysqli_errno($this->link);
+		}
+
 		if (defined('DEBUG') && DEBUG) {
 			echo 'SQL Error: ' . htmlspecialchars($message) . '<br>';
 			echo 'Error Code: ' . $errno . '<br>';
@@ -247,7 +251,7 @@ class dbstuff {
 		} else {
 			echo 'Database error occurred. Please try again later.';
 		}
-		
+
 		error_log('DB Error [' . $errno . ']: ' . $error . ' - SQL: ' . $sql);
 	}
 }

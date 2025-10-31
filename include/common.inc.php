@@ -43,7 +43,7 @@ foreach(array('_COOKIE', '_POST', '_GET') as $_request) {
 $smarty = new Smarty();
 template_init($smarty);
 $db = new dbstuff();
-$db->connect($dbhost, $dbuser, $dbpwd, $dbname, 0, TRUE, 'utf8');
+$db->connect($dbhost, $dbuser, $dbpwd, $dbname, 0, TRUE);
 
 // $my = new Manyou(API_KEY, API_SECRET);
 // $uid = intval($my->api_client->user_getLoggedInUser());
